@@ -1,14 +1,17 @@
 import React, {useState} from 'react';
 
-import {Text, View, StyleSheet, Button, Pressable, Modal} from 'react-native';
+import {Text, View, StyleSheet, Pressable, FlatList} from 'react-native';
 import Formulario from './src/components/Formulario';
+import Paciente from './src/components/Paciente';
 
 const App = () => {
-
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [clientes, setClientes] = useState([]);
+  const [pacientes, setPacientes] = useState([]);
 
+  const pacienteEditar = id => {
+    console.log('EDITANDO => ', id);
+  };
   /* VIEW se comporta como un DIV y SafeAreaView es para IOS.se puede usar Fragment o <></> */
   /* StyleSheet es el CSS en react Native es un 95% igual a CSS ,FLEXBOX utiliza,se usa POR FUERA DEL RETURN */
   return (
@@ -22,7 +25,31 @@ const App = () => {
         style={styles.btnNuevaCita}>
         <Text style={styles.btnTextoNuevaCita}>Nueva Cita</Text>
       </Pressable>
-      <Formulario modalVisible={modalVisible} />
+
+      {pacientes.length === 0 ? (
+        <Text style={styles.noPacientes}>No hay Pacientes Aún</Text>
+      ) : (
+        <FlatList
+          data={pacientes}
+          keyExtractor={item => item.id}
+          renderItem={({item}) => {
+            return (
+              <Paciente
+                item={item}
+                setModalVisible={setModalVisible}
+                pacienteEditar={pacienteEditar}
+              />
+            );
+          }}
+        />
+      )}
+
+      <Formulario
+        pacientes={pacientes}
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        setPacientes={setPacientes}
+      />
     </View>
   );
 };
@@ -34,6 +61,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     color: '#374151',
     fontWeight: '600',
+    marginTop: 50,
   },
   tituloBold: {fontWeight: '900', color: '#6D28D9'},
   btnNuevaCita: {
@@ -50,6 +78,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '900',
     textTransform: 'uppercase',
+  },
+  noPacientes: {
+    marginTop: 40,
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: '600',
   },
 });
 
