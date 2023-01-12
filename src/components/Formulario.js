@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Modal,
   Text,
@@ -16,13 +16,28 @@ const Formulario = ({
   setModalVisible,
   setPacientes,
   pacientes,
+  paciente: pacienteObj,
+  setPaciente: setPacienteApp,
 }) => {
   const [paciente, setPaciente] = useState('');
+  const [id, setId] = useState('');
   const [propietario, setPropietario] = useState('');
   const [email, setEmail] = useState('');
   const [telefono, setTelefono] = useState('');
   const [fecha, setFecha] = useState(new Date());
   const [sintomas, setSintomas] = useState('');
+
+  useEffect(() => {
+    if (Object.keys(pacienteObj).length > 0) {
+      setId(pacienteObj.id);
+      setPaciente(pacienteObj.paciente);
+      setPropietario(pacienteObj.propietario);
+      setEmail(pacienteObj.email);
+      setTelefono(pacienteObj.telefono);
+      setFecha(pacienteObj.fecha);
+      setSintomas(pacienteObj.sintomas);
+    }
+  }, [pacienteObj]);
 
   const handleCita = () => {
     //VALIDAR
@@ -33,9 +48,7 @@ const Formulario = ({
       ]); /* Mensaje nativo de Android o IOS..se puede agregar botones o dejarlo normal sin nada.. */
       return;
     }
-
     const nuevoPaciente = {
-      id: Date.now(),
       paciente,
       propietario,
       email,
@@ -43,8 +56,23 @@ const Formulario = ({
       fecha,
       sintomas,
     };
-    setPacientes([...pacientes, nuevoPaciente]);
+    if (id) {
+      //Editando,si se esta editando se mantiene el id ya que es un registro actual y NO uno nuevo
+      nuevoPaciente.id = id;
+
+      const pacientesActualizados = pacientes.map(pacienteState =>
+        pacienteState.id === nuevoPaciente.id ? nuevoPaciente : pacienteState,
+      );
+      setPacientes(pacientesActualizados);
+      setPacienteApp({});
+    } else {
+      //Nuevo Registro
+      nuevoPaciente.id = Date.now();
+      setPacientes([...pacientes, nuevoPaciente]);
+    }
+
     setModalVisible(!modalVisible);
+    setId('');
     setPaciente('');
     setPropietario('');
     setEmail('');
@@ -58,12 +86,21 @@ const Formulario = ({
       <View style={styles.contenido}>
         <ScrollView>
           <Text style={styles.titulo}>
-            Nueva {''}
+            {pacienteObj.id ? 'Editar' : 'Nueva'} {''}
             <Text style={styles.tituloBold}>Cita</Text>
           </Text>
           <Pressable
             style={styles.btnCancelar}
-            onLongPress={() => setModalVisible(false)}>
+            onLongPress={() => {
+              setModalVisible(!modalVisible);
+              setId('');
+              setPacienteApp({});
+              setPropietario('');
+              setEmail('');
+              setTelefono('');
+              setFecha(new Date());
+              setSintomas('');
+            }}>
             <Text style={styles.btnCancelarTexto}>Cancelar</Text>
           </Pressable>
 
@@ -132,7 +169,9 @@ const Formulario = ({
             />
           </View>
           <Pressable style={styles.btnNuevaCita} onPress={handleCita}>
-            <Text style={styles.btnNuevaCitaTexto}>Agregar Paciente</Text>
+            <Text style={styles.btnNuevaCitaTexto}>
+              {pacienteObj.id ? 'Editar Paciente' : 'Agregar Paciente'}
+            </Text>
           </Pressable>
         </ScrollView>
       </View>

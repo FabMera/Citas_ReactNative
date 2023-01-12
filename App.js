@@ -1,19 +1,49 @@
 import React, {useState} from 'react';
 
-import {Text, View, StyleSheet, Pressable, FlatList} from 'react-native';
+import {
+  Text,
+  View,
+  StyleSheet,
+  Pressable,
+  FlatList,
+  Alert,
+  Modal,
+} from 'react-native';
 import Formulario from './src/components/Formulario';
+import InformacionPaciente from './src/components/InformacionPaciente';
 import Paciente from './src/components/Paciente';
 
 const App = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const [pacientes, setPacientes] = useState([]);
+  const [paciente, setPaciente] = useState({});
+  const [modalPaciente, setModalPaciente] = useState(false);
 
   const pacienteEditar = id => {
-    console.log('EDITANDO => ', id);
+    const pacienteEditar = pacientes.filter(item => item.id === id);
+    setPaciente(pacienteEditar[0]);
   };
   /* VIEW se comporta como un DIV y SafeAreaView es para IOS.se puede usar Fragment o <></> */
   /* StyleSheet es el CSS en react Native es un 95% igual a CSS ,FLEXBOX utiliza,se usa POR FUERA DEL RETURN */
+
+  const eliminarPaciente = id => {
+    Alert.alert(
+      '¿Deseas eliminar este paciente',
+      'Un paciente eliminado no se puede recuperar',
+      [
+        {text: 'Cancelar'},
+        {
+          text: 'Si,Eliminar',
+          onPress: () => {
+            const eliminarPaciente = pacientes.filter(item => item.id !== id);
+            setPacientes(eliminarPaciente);
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>
@@ -30,6 +60,7 @@ const App = () => {
         <Text style={styles.noPacientes}>No hay Pacientes Aún</Text>
       ) : (
         <FlatList
+          style={styles.listado}
           data={pacientes}
           keyExtractor={item => item.id}
           renderItem={({item}) => {
@@ -37,7 +68,10 @@ const App = () => {
               <Paciente
                 item={item}
                 setModalVisible={setModalVisible}
+                setPaciente={setPaciente}
                 pacienteEditar={pacienteEditar}
+                eliminarPaciente={eliminarPaciente}
+                setModalPaciente={setModalPaciente}
               />
             );
           }}
@@ -49,7 +83,12 @@ const App = () => {
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
         setPacientes={setPacientes}
+        paciente={paciente}
+        setPaciente={setPaciente}
       />
+      <Modal visible={modalPaciente}>
+        <InformacionPaciente paciente={paciente} setModalPaciente={setModalPaciente}/>
+      </Modal>
     </View>
   );
 };
@@ -85,6 +124,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
   },
+  listado: {},
 });
 
 export default App;
